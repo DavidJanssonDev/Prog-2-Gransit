@@ -1,0 +1,59 @@
+// General info:
+
+Type: Roug-Like
+
+Controlls: WASD / ARROW KEYS
+
+Function name = camelCase 
+    - hiILovePrograming
+
+Variabl name = snake_case
+    - hi_i_love_programing
+// CODE STRUCTURE:
+
+OBJECT: 
+
+    - Game loop
+
+    // THINGS IN GAME
+    - General Class
+    - Player
+    - Enemy
+    - Obstical
+
+
+General Class:
+    
+    Variables: 
+        
+        - Position X: Int
+        - Position Y: Int
+        - Health: Floats
+        - Damage: Floats
+        - Speed: Floats
+        
+
+
+Enemy (Arv av General Class):
+
+    Variables: 
+
+        Variables From General Class
+     
+
+        - In Range Of Aggro: Bool
+
+    Functions: 
+        - Aggro
+        - Attack
+        - Chase
+
+Player (Arv av General Class):
+
+    Variables:
+     
+        Variables From General Class
+
+        - Inventory: Dictanary
+
+
