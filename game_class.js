@@ -1,60 +1,81 @@
 export default class Player {
-  constructor(hp, dmg, acceleration) {
+  constructor(
+    hp,
+    dmg,
+    speed,
+    start_x,
+    start_y,
+    width_player,
+    height_player,
+    acceleration_speed
+  ) {
     this.hp = hp;
     this.dmg = dmg;
-    this.acceleration = acceleration;
-    this.velocityX = 0;
-    this.velocityY = 0;
-    this.x = 0;
-    this.y = 0;
-    this.prevX = 0;
-    this.prevY = 0;
-    this.interpolationFactor = 0.1;
-    this.maxVelocity = 2;
+    this.height_player = height_player;
+    this.width_player = width_player;
+
+    this.x = start_x;
+    this.y = start_y;
+
+    this.speed = speed;
+    this.acceleration = 0.5;
+    this.deceleration = 1;
+    this.currentSpeed = 0;
+
+    this.movements_keys = {
+      w: false,
+      a: false,
+      d: false,
+      s: false,
+      ArrowUp: false,
+      ArrowDown: false,
+      ArrowLeft: false,
+      ArrowRight: false,
+    };
   }
 
   update() {
-    this.x = this.prevX + this.interpolationFactor * (this.x - this.prevX);
-    this.y = this.prevY + this.interpolationFactor * (this.y - this.prevY);
+    const xDirection =
+      (this.movements_keys["a"] || this.movements_keys["ArrowLeft"] ? -1 : 0) +
+      (this.movements_keys["d"] || this.movements_keys["ArrowRight"] ? 1 : 0);
+    const yDirection =
+      (this.movements_keys["w"] || this.movements_keys["ArrowUp"] ? -1 : 0) +
+      (this.movements_keys["s"] || this.movements_keys["ArrowDown"] ? 1 : 0);
 
-    this.velocityX += this.accelerationX;
-    this.velocityY += this.accelerationY;
+    const magnitude = Math.sqrt(xDirection ** 2 + yDirection ** 2);
 
-    const magnitude = Math.sqrt(this.velocityX ** 2 + this.velocityY ** 2);
-    if (magnitude > this.maxVelocity) {
-      const scale = this.maxVelocity / magnitude;
-      this.velocityX *= scale;
-      this.velocityY *= scale;
-    }
+    const normalizedX = magnitude === 0 ? 0 : xDirection / magnitude;
+    const normalizedY = magnitude === 0 ? 0 : yDirection / magnitude;
 
-    this.x += this.velocityX;
-    this.y += this.velocityY;
-
-    this.prevX = this.x;
-    this.prevY = this.y;
-  }
-
-  accelerate(accelerationX, accelerationY) {
-    const magnitude = Math.sqrt(accelerationX ** 2 + accelerationY ** 2);
     if (magnitude > 0) {
-      const scale = this.acceleration / magnitude;
-      this.accelerationX = accelerationX * scale;
-      this.accelerationY = accelerationY * scale;
+      // Accelerate towards the max speed
+      this.currentSpeed = Math.min(
+        this.currentSpeed + this.acceleration,
+        this.speed
+      );
     } else {
-      this.accelerationX = 0;
-      this.accelerationY = 0;
+      // Decelerate when no movement keys are pressed
+      this.currentSpeed = Math.max(this.currentSpeed - this.deceleration, 0);
     }
-  }
 
-  decelerate(decelerationX, decelerationY) {
-    this.accelerationX = -decelerationX * this.acceleration;
-    this.accelerationY = -decelerationY * this.acceleration;
+    this.x += this.currentSpeed * normalizedX;
+    this.y += this.currentSpeed * normalizedY;
+
+    console.log(`X-axes: ${xDirection}`);
+    console.log(`Y-axes: ${yDirection}`);
   }
 
   renderer(ctx) {
-    ctx.fillRect(this.x, this.y, this.width, this.height);
+    // Align to Pixel Grid
+    const x = Math.round(this.x);
+    const y = Math.round(this.y);
 
-    // Add rendering logic here to draw the player on the canvas
-    // You might use the canvas and ctx variables from your main.js file
+    // Disable Anti-aliasing
+    ctx.imageSmoothingEnabled = false;
+
+    ctx.fillRect(x, y, this.width_player, this.height_player);
+
+    // Reset imageSmoothingEnabled to its default value
+    ctx.imageSmoothingEnabled = true;
   }
 }
