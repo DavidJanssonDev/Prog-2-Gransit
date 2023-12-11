@@ -1,6 +1,6 @@
 import defaultExport from "./GENERAL_VARIBELS.js";
 export default class Player {
-  constructor(hp, dmg, speed, size) {
+  constructor(hp, dmg, speed, animation) {
     this.hp = hp;
     this.dmg = dmg;
 
@@ -9,28 +9,40 @@ export default class Player {
 
     // Player Sprite:
     this.playerImage = new Image();
-    this.playerImage.src = "../Picture/PlayerSpriteProg2.png";
+    this.playerImage.src = "../Picture/PlayerSpriteProg2UPP.png";
 
     this.CANVAS_HEIGHT = defaultExport.GAME_HEIGHT;
     this.CANVAS_WIDTH = defaultExport.GAME_WIDTH;
 
     //? Animation
-    this.animaitons = 4; // the total of animations
-    this.spa = 8; // the toatl amout of animations per sprite
+    this.canAnmate = animation;
+    this.animaitonCurrentState = "idle";
     this.spriteAnimation = [];
     this.animationState = [
       {
         name: "idle",
-        frames: 8,
+        frames: 11,
       },
       {
         name: "GoingUp",
-        frames: 8,
+        frames: 11,
+      },
+      {
+        name: "GoingDown",
+        frames: 11,
+      },
+      {
+        name: "GoingRight",
+        frames: 11,
+      },
+      {
+        name: "GoingLeft",
+        frames: 11,
       },
     ];
 
-    this.sprite_width = this.playerImage.naturalWidth / this.spa;
-    this.sprite_height = this.playerImage.naturalHeight / this.animaitons;
+    this.spriteWidth = 32;
+    this.spriteHeight = 32;
 
     // Movment Stuff:
     this.speed = speed;
@@ -100,7 +112,7 @@ export default class Player {
       // Decelerate when no movement keys are pressed
       this.currentSpeed = Math.max(this.currentSpeed - this.deceleration, 0);
     }
-
+    console.log(this.currentSpeed);
     this.x += this.currentSpeed * normalizedX;
     this.y += this.currentSpeed * normalizedY;
   }
@@ -110,18 +122,21 @@ export default class Player {
     this.movement();
   }
 
-  renderer(ctx, frameX, frameY) {
+  renderer(ctx, posCutX, posCutY) {
     // ctx.drawImage(imgae, sx, sy, sw, sh, dx, dy, dw, dh);
+    let x = Math.round(this.x);
+    let y = Math.round(this.y);
+
     ctx.drawImage(
       this.playerImage,
-      frameX,
-      frameY * this.sprite_height,
-      this.sprite_width,
-      this.sprite_height,
-      0,
-      0,
-      this.sprite_width,
-      this.sprite_height
+      posCutX,
+      posCutY,
+      this.spriteWidth,
+      this.spriteHeight,
+      x,
+      y,
+      this.spriteWidth,
+      this.spriteHeight
     );
   }
 }
