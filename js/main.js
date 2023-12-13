@@ -9,7 +9,7 @@
     
 */
 
-import Player from "./game_class.js";
+import { Player } from "./game_class.js";
 import defaultExport from "./GENERAL_VARIBELS.js";
 
 //  Importing canvas and create teh drawing tool
@@ -20,7 +20,19 @@ const ctx = canvas.getContext("2d");
 canvas.width = defaultExport.GAME_WIDTH;
 canvas.height = defaultExport.GAME_HEIGHT;
 
-const PLAYER = new Player(10, 10, 10, true);
+const PLAYER = new Player(
+  defaultExport.PLAYER_DEFAULT_ANIMATIONSATE,
+  defaultExport.PLAYER_ANIMATION_STATES,
+  true,
+  10,
+  10,
+  5,
+  defaultExport.PLAYER_STARTING_POSITON[1],
+  defaultExport.PLAYER_STARTING_POSITON[0],
+  0.2,
+  0.1
+);
+PLAYER.addEventListeners();
 
 //* Animaiton of stuff
 let gameTick = 0;
@@ -44,7 +56,6 @@ function CreateAnimationStates(...GAME_OBJECTS) {
       // Assuming obj is defined somewhere in your code
       obj.spriteAnimation[state.name] = frames;
     });
-    console.log(obj);
   });
 }
 
@@ -80,5 +91,7 @@ function gameLoop() {
 }
 
 CreateAnimationStates(PLAYER);
+
+console.log(PLAYER);
 
 gameLoop();

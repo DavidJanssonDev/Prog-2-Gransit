@@ -1,11 +1,62 @@
 import defaultExport from "./GENERAL_VARIBELS.js";
-export default class Player {
-  constructor(hp, dmg, speed, animation) {
-    this.hp = hp;
-    this.dmg = dmg;
 
-    this.x = 100;
-    this.y = 100;
+class GeneralClass {
+  constructor(hp, dmg, speed, animation, startX, startY) {
+    this.canAnimate = animation;
+
+    // GENERAL STATS
+    this.health = hp;
+    this.damage = dmg;
+    this.speed = speed;
+
+    this.x = startX;
+    this.y = startY;
+  }
+}
+
+class AnimationClass extends GeneralClass {
+  constructor(
+    defaultAnimationState,
+    animationsStates,
+    animation,
+    hp,
+    dmg,
+    speed,
+    startX,
+    startY
+  ) {
+    super(hp, dmg, speed, animation, startX, startY);
+
+    // ANIMATION
+    this.animationCurrentState = defaultAnimationState;
+    this.spriteAnimation = [];
+    this.animationState = animationsStates;
+    this.spriteWidth = 32;
+    this.spriteHeight = 32;
+  }
+}
+
+export class Player extends AnimationClass {
+  constructor(
+    defaultAnimationState,
+    animationsStates,
+    animation,
+    hp,
+    dmg,
+    speed,
+    startX,
+    startY
+  ) {
+    super(
+      defaultAnimationState,
+      animationsStates,
+      animation,
+      hp,
+      dmg,
+      speed,
+      startX,
+      startY
+    );
 
     // Player Sprite:
     this.playerImage = new Image();
@@ -14,38 +65,7 @@ export default class Player {
     this.CANVAS_HEIGHT = defaultExport.GAME_HEIGHT;
     this.CANVAS_WIDTH = defaultExport.GAME_WIDTH;
 
-    //? Animation
-    this.canAnmate = animation;
-    this.animaitonCurrentState = "idle";
-    this.spriteAnimation = [];
-    this.animationState = [
-      {
-        name: "idle",
-        frames: 11,
-      },
-      {
-        name: "GoingUp",
-        frames: 11,
-      },
-      {
-        name: "GoingDown",
-        frames: 11,
-      },
-      {
-        name: "GoingRight",
-        frames: 11,
-      },
-      {
-        name: "GoingLeft",
-        frames: 11,
-      },
-    ];
-
-    this.spriteWidth = 32;
-    this.spriteHeight = 32;
-
     // Movment Stuff:
-    this.speed = speed;
     this.acceleration = 0.5;
     this.deceleration = 1;
     this.currentSpeed = 0;
@@ -62,22 +82,65 @@ export default class Player {
     };
   }
 
-  handleKeyEvent(event) {
-    let playerObject = GAME_OBJECTS.find((object) => object instanceof Player);
+  #GetDirection(positivKeys, negativKeys) {
+    return (
+      (this.movements_keys[positivKeys[0]] ||
+        this.movements_keys[positivKeys[1]]) -
+      (this.movements_keys[negativKeys[0]] ||
+        this.movements_keys[negativKeys[1]])
+    );
+  }
 
+  movement() {
+    // Calculate the movement in both x and y directions
+    const moveX = this.#GetDirection(["ArrowRight", "d"], ["ArrowLeft", "a"]);
+    const moveY = this.#GetDirection(["ArrowDown", "s"], ["ArrowUp", "w"]);
+
+    // Calculate the diagonal speed
+    const diagonalSpeed = Math.sqrt(moveX ** 2 + moveY ** 2);
+
+    // Normalize the movement vector
+    const normalizedMoveX = moveX / diagonalSpeed || 0;
+    const normalizedMoveY = moveY / diagonalSpeed || 0;
+
+    if (diagonalSpeed > 0) {
+      this.currentSpeed = Math.min(
+        this.currentSpeed + this.acceleration,
+        this.speed
+      );
+    } else {
+      // Decelerate to 0 when no movement keys are pressed
+      this.currentSpeed = Math.max(this.currentSpeed - this.deceleration, 0);
+    }
+
+    // Update the player position
+    this.x += this.currentSpeed * normalizedMoveX;
+    this.y += this.currentSpeed * normalizedMoveY;
+
+    console.log(` 
+    Cordinates: 
+        x: ${this.x} 
+        y: ${this.y}
+    
+    Speed:
+        Speed ${this.currentSpeed}
+    `);
+  }
+
+  handleKeyEvent(event) {
     // Check if the pressed or released key is in the movements_keys dictionary
-    if (playerObject.movements_keys.hasOwnProperty(event.key)) {
-      playerObject.movements_keys[event.key] = event.type === "keydown";
+    if (this.movements_keys.hasOwnProperty(event.key)) {
+      this.movements_keys[event.key] = event.type === "keydown";
     }
   }
 
   addEventListeners() {
-    document.addEventListener("keydown", (event) =>
-      this.handleKeyEvent(event, true)
-    );
-    document.addEventListener("keyup", (event) =>
-      this.handleKeyEvent(event, false)
-    );
+    document.addEventListener("keydown", (event) => {
+      this.handleKeyEvent(event, true);
+    });
+    document.addEventListener("keyup", (event) => {
+      this.handleKeyEvent(event, false);
+    });
   }
 
   removeEventListeners() {
@@ -89,41 +152,12 @@ export default class Player {
     );
   }
 
-  movement() {
-    const xDirection =
-      (this.movements_keys["a"] || this.movements_keys["ArrowLeft"] ? -1 : 0) +
-      (this.movements_keys["d"] || this.movements_keys["ArrowRight"] ? 1 : 0);
-    const yDirection =
-      (this.movements_keys["w"] || this.movements_keys["ArrowUp"] ? -1 : 0) +
-      (this.movements_keys["s"] || this.movements_keys["ArrowDown"] ? 1 : 0);
-
-    //
-    const magnitude = Math.sqrt(xDirection ** 2 + yDirection ** 2);
-    const normalizedX = magnitude === 0 ? 0 : xDirection / magnitude;
-    const normalizedY = magnitude === 0 ? 0 : yDirection / magnitude;
-
-    if (magnitude > 0) {
-      // Accelerate towards the max speed
-      this.currentSpeed = Math.min(
-        this.currentSpeed + this.acceleration,
-        this.speed
-      );
-    } else {
-      // Decelerate when no movement keys are pressed
-      this.currentSpeed = Math.max(this.currentSpeed - this.deceleration, 0);
-    }
-    console.log(this.currentSpeed);
-    this.x += this.currentSpeed * normalizedX;
-    this.y += this.currentSpeed * normalizedY;
-  }
-
   update() {
     // Player postion update:
     this.movement();
   }
 
   renderer(ctx, posCutX, posCutY) {
-    // ctx.drawImage(imgae, sx, sy, sw, sh, dx, dy, dw, dh);
     let x = Math.round(this.x);
     let y = Math.round(this.y);
 

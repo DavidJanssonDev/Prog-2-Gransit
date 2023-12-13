@@ -1,6 +1,6 @@
 // General info:
 
-Type: Roug-Like
+Type: infiity shooter game
 
 Controlls: WASD / ARROW KEYS
 
