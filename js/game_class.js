@@ -96,6 +96,12 @@ export class Player extends AnimationClass {
     const moveX = this.#GetDirection(["ArrowRight", "d"], ["ArrowLeft", "a"]);
     const moveY = this.#GetDirection(["ArrowDown", "s"], ["ArrowUp", "w"]);
 
+    if (moveX > 0) this.animationCurrentState = "GoingRight";
+    else if (moveX < 0) this.animationCurrentState = "GoingLeft";
+    else if (moveY > 0) this.animationCurrentState = "GoingDown";
+    else if (moveY < 0) this.animationCurrentState = "GoingUp";
+    else this.animationCurrentState = "Idle";
+
     // Calculate the diagonal speed
     const diagonalSpeed = Math.sqrt(moveX ** 2 + moveY ** 2);
 
@@ -124,6 +130,10 @@ export class Player extends AnimationClass {
     
     Speed:
         Speed ${this.currentSpeed}
+    
+    Current animation State
+      ${this.animationCurrentState}
+
     `);
   }
 
