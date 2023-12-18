@@ -1,6 +1,11 @@
 const GAME_WIDTH = window.innerWidth;
 const GAME_HEIGHT = window.innerHeight;
 
+const ACCELERATION = 0.5;
+const DECELERATION = 1;
+
+const SPRITE_SIZE = 32;
+
 const PLAYER_STARTING_POSITON = [100, 100];
 const PLAYER_DEFAULT_ANIMATIONSATE = "idle";
 const PLAYER_ANIMATION_STATES = [
@@ -26,7 +31,7 @@ const PLAYER_ANIMATION_STATES = [
   },
 ];
 
-export default {
+export {
   // GAME
   GAME_WIDTH,
   GAME_HEIGHT,
@@ -35,4 +40,7 @@ export default {
   PLAYER_STARTING_POSITON,
   PLAYER_ANIMATION_STATES,
   PLAYER_DEFAULT_ANIMATIONSATE,
+  SPRITE_SIZE,
+  ACCELERATION,
+  DECELERATION,
 };

@@ -1,16 +1,45 @@
-import defaultExport from "./GENERAL_VARIBELS.js";
+import {
+  ACCELERATION,
+  DECELERATION,
+  GAME_HEIGHT,
+  GAME_WIDTH,
+  SPRITE_SIZE,
+} from "./GENERAL_VARIBELS.js";
 
 class GeneralClass {
-  constructor(hp, dmg, speed, animation, startX, startY) {
+  constructor(hp, dmg, speed, animation, startX, startY, type) {
     this.canAnimate = animation;
-
-    // GENERAL STATS
     this.health = hp;
     this.damage = dmg;
     this.speed = speed;
-
     this.x = startX;
     this.y = startY;
+    this.type = type;
+
+    // Add sprite width and height properties here
+    this.spriteWidth = SPRITE_SIZE;
+    this.spriteHeight = SPRITE_SIZE;
+  }
+
+  collision(otherObject) {
+    const thisRect = this.getBoundingBox();
+    const otherRect = otherObject.getBoundingBox();
+
+    return (
+      thisRect.x < otherRect.x + otherRect.width &&
+      thisRect.x + thisRect.width > otherRect.x &&
+      thisRect.y < otherRect.y + otherRect.height &&
+      thisRect.y + thisRect.height > otherRect.y
+    );
+  }
+
+  getBoundingBox() {
+    return {
+      x: this.x,
+      y: this.y,
+      width: this.spriteWidth,
+      height: this.spriteHeight,
+    };
   }
 }
 
@@ -23,16 +52,15 @@ class AnimationClass extends GeneralClass {
     dmg,
     speed,
     startX,
-    startY
+    startY,
+    type
   ) {
-    super(hp, dmg, speed, animation, startX, startY);
+    super(hp, dmg, speed, animation, startX, startY, type);
 
     // ANIMATION
     this.animationCurrentState = defaultAnimationState;
     this.spriteAnimation = [];
     this.animationState = animationsStates;
-    this.spriteWidth = 32;
-    this.spriteHeight = 32;
   }
 }
 
@@ -45,7 +73,8 @@ export class Player extends AnimationClass {
     dmg,
     speed,
     startX,
-    startY
+    startY,
+    type
   ) {
     super(
       defaultAnimationState,
@@ -55,20 +84,20 @@ export class Player extends AnimationClass {
       dmg,
       speed,
       startX,
-      startY
+      startY,
+      type
     );
 
-    // Player Sprite:
     this.playerImage = new Image();
     this.playerImage.src = "../Picture/PlayerSpriteProg2UPP.png";
 
-    this.CANVAS_HEIGHT = defaultExport.GAME_HEIGHT;
-    this.CANVAS_WIDTH = defaultExport.GAME_WIDTH;
+    this.CANVAS_HEIGHT = GAME_HEIGHT;
+    this.CANVAS_WIDTH = GAME_WIDTH;
 
-    // Movment Stuff:
-    this.acceleration = 0.5;
-    this.deceleration = 1;
+    this.acceleration = ACCELERATION;
+    this.deceleration = DECELERATION;
     this.currentSpeed = 0;
+    this.isColiding = false;
 
     this.movements_keys = {
       w: false,
@@ -82,7 +111,7 @@ export class Player extends AnimationClass {
     };
   }
 
-  #GetDirection(positivKeys, negativKeys) {
+  #getDirection(positivKeys, negativKeys) {
     return (
       (this.movements_keys[positivKeys[0]] ||
         this.movements_keys[positivKeys[1]]) -
@@ -92,49 +121,64 @@ export class Player extends AnimationClass {
   }
 
   movement() {
-    // Calculate the movement in both x and y directions
-    const moveX = this.#GetDirection(["ArrowRight", "d"], ["ArrowLeft", "a"]);
-    const moveY = this.#GetDirection(["ArrowDown", "s"], ["ArrowUp", "w"]);
+    if (this.isColiding) return;
+    const moveX = this.#getDirection(["ArrowRight", "d"], ["ArrowLeft", "a"]);
+    const moveY = this.#getDirection(["ArrowDown", "s"], ["ArrowUp", "w"]);
 
+    this.updateAnimationState(moveX, moveY);
+
+    const diagonalSpeed = Math.sqrt(moveX ** 2 + moveY ** 2);
+    const normalizedMoveX = moveX / diagonalSpeed || 0;
+    const normalizedMoveY = moveY / diagonalSpeed || 0;
+
+    this.updateSpeed(diagonalSpeed);
+    this.updatePosition(normalizedMoveX, normalizedMoveY);
+  }
+
+  updateAnimationState(moveX, moveY) {
     if (moveX > 0) this.animationCurrentState = "GoingRight";
     else if (moveX < 0) this.animationCurrentState = "GoingLeft";
     else if (moveY > 0) this.animationCurrentState = "GoingDown";
     else if (moveY < 0) this.animationCurrentState = "GoingUp";
-    else this.animationCurrentState = "Idle";
+    else this.animationCurrentState = "idle";
+  }
 
-    // Calculate the diagonal speed
-    const diagonalSpeed = Math.sqrt(moveX ** 2 + moveY ** 2);
-
-    // Normalize the movement vector
-    const normalizedMoveX = moveX / diagonalSpeed || 0;
-    const normalizedMoveY = moveY / diagonalSpeed || 0;
-
+  updateSpeed(diagonalSpeed) {
     if (diagonalSpeed > 0) {
       this.currentSpeed = Math.min(
         this.currentSpeed + this.acceleration,
         this.speed
       );
     } else {
-      // Decelerate to 0 when no movement keys are pressed
       this.currentSpeed = Math.max(this.currentSpeed - this.deceleration, 0);
     }
+  }
 
-    // Update the player position
+  updatePosition(normalizedMoveX, normalizedMoveY) {
     this.x += this.currentSpeed * normalizedMoveX;
     this.y += this.currentSpeed * normalizedMoveY;
+  }
 
-    console.log(` 
-    Cordinates: 
-        x: ${this.x} 
-        y: ${this.y}
-    
-    Speed:
-        Speed ${this.currentSpeed}
-    
-    Current animation State
-      ${this.animationCurrentState}
+  collisionHandling(object) {
+    console.log(object.type);
+    if (object.type === "wall") {
+      this.currentSpeed = 0;
+      this.isColiding = true;
+    } else if (object.type === "enemy") {
+      object.health -= this.damage;
+      console.log("Dealt damage to the enemy. Enemy health:", object.health);
+    }
 
-    `);
+    // Additional collision handling logic can be added here
+  }
+
+  colistion(gameObjectsIndex, AllGameObjects) {
+    AllGameObjects.forEach((object, index) => {
+      console.log(this.collision(object));
+      if (index !== gameObjectsIndex && this.collision(object)) {
+        this.collisionHandling(object);
+      }
+    });
   }
 
   handleKeyEvent(event) {
@@ -162,9 +206,10 @@ export class Player extends AnimationClass {
     );
   }
 
-  update() {
+  update(index, Objects) {
     // Player postion update:
     this.movement();
+    this.colistion(index, Objects);
   }
 
   renderer(ctx, posCutX, posCutY) {
