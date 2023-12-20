@@ -77,7 +77,11 @@ function CreateAnimationStates(obj) {
 function logicLoop() {
   console.log(GAME_OBJECTS);
   GAME_OBJECTS.forEach((object, index) => {
-    object?.update(index, GAME_OBJECTS);
+    object?.update(
+      index,
+      GAME_OBJECTS,
+      GAME_OBJECTS.filter((obj) => obj.type === "wall")
+    );
   });
 }
 

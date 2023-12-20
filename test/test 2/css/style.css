@@ -1,0 +1,22 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: black;
+  display: flex;
+  align-content: center;
+  justify-content: center;
+  height: 100dvh;
+}
+
+#canvas1 {
+  border: 5px solid white;
+}
+#playerImage,
+#backgorundImage,
+#enemyImage {
+  display: none;
+}

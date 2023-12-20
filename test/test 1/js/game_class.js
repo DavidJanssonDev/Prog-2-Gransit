@@ -161,7 +161,9 @@ export class Player extends AnimationClass {
 
   collisionHandling(object) {
     console.log(object.type);
+
     if (object.type === "wall") {
+      console.log();
       this.currentSpeed = 0;
       this.isColiding = true;
     } else if (object.type === "enemy") {
